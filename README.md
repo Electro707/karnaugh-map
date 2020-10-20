@@ -8,17 +8,18 @@ Below is an example of a two variable karnaugh map.
 
 ## Installation
     # to get the karnaugh-map.sty file
-    pdflatex karnaugh-map.ins
+    lualatex karnaugh-map.ins
     # to get the documentation: karnaugh-map.pdf
-    pdflatex karnaugh-map.dtx
+    lualatex karnaugh-map.dtx
 
 ## Dependencies
 * tikz
 * xparse
 * xstring
+* luacode
 
 ## Development
-The karnaugh-map package source is hosted at [https://github.com/2pi/karnaugh-map](https://github.com/2pi/karnaugh-map) as well as the [bugtracker](https://github.com/2pi/karnaugh-map/issues).
+The karnaugh-map-lua package source is hosted at [https://github.com/Electro707/karnaugh-map](https://github.com/Ekectro707/karnaugh-map) as well as the [bugtracker](https://github.com/Electro707/karnaugh-map/issues).
 
 ## Tests
     ./test.sh
