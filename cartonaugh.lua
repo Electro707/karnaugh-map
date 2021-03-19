@@ -56,7 +56,7 @@ function greyBinToDecimal(num)
         mask = mask >> 1
         num = num ~ mask
     end
-    return num
+    return tonumber(num)
 end
 
 -- Function to pad a string by a amount with b string
@@ -93,7 +93,7 @@ function generateKMap(column, row, grid_numb)
         for r=1,row,1 do
             if r == 0 then
                 if c == 0 then
-
+                    -- Do Nothing...
                 elseif c == (column+1) then
                     return_str = return_str .. ("\\phantom{" .. decimalToBin(0, outside_column_bits) .. "}")
                 else
@@ -109,7 +109,7 @@ function generateKMap(column, row, grid_numb)
                 elseif c == (column+1) then
 
                 else
-                    return_str = return_str ..("|(" .. padString((decimalToGreyBin(grid_numb, outside_grid_numb_bits) .. decimalToGreyBin(r-1, outside_column_bits) .. decimalToGreyBin(c-1, outside_row_bits)), 6, 0) ..  ")|" .. "\\phantom{0}")
+                    return_str = return_str ..("|(" .. padString((decimalToGreyBin(grid_numb, outside_grid_numb_bits) .. decimalToGreyBin(c-1, outside_column_bits) .. decimalToGreyBin(r-1, outside_row_bits)), 6, 0) ..  ")|" .. "\\phantom{0}")
                     --TODO: Look into why reversing c and r from where they should be makes it work
                 end
             end
@@ -126,6 +126,16 @@ end
 
 
 function init_cartonaught_env(numb_cols, numb_row, numb_submaps, is_bw, var12_str, var34_str, var56_str)
+    -- Change the default texts depending on the number of submaps if not custom name has been given
+    -- TODO: Get this to actually work
+    if var12_str == 'X_1X_0' and var34_str == 'X_3X_2' and var56_str == 'X_5X_4' then
+        if numb_submaps == 1 then
+            var56_str = 'X_3'
+        end
+        if numb_cols == 1 then
+            var12_str = 'X_0'
+        end
+    end
     cartonaugh_env_settings = {
         cols = numb_cols,
         rows = numb_row,
@@ -136,9 +146,9 @@ function init_cartonaught_env(numb_cols, numb_row, numb_submaps, is_bw, var12_st
                 v34 = var34_str,
                 v56 = var56_str,
         },
-        color_index = 0,
-    }
-    print(is_bw)
+        color_index = 1,
+    }   
+    
     draw_pgf_kmap(numb_cols, numb_row, numb_submaps, var12_str, var34_str, var56_str)
 end
 
@@ -177,8 +187,8 @@ function draw_pgf_kmap(column, row, submaps_n, var1, var2, var3)
         -- Print out the top-left line corner with the variables
         if (is_multitable_seperated == false) or (d==0) then
             localPrint(string.format("\\draw[inner sep=0pt, outer sep=0pt] (%f, %f) -- (%f, %f);", grid_x_loc+line_width, grid_y_loc-line_width, grid_x_loc-zero_var_line_lenght, grid_y_loc+zero_var_line_lenght))
-            localPrint(string.format("\\node[left] at (%f,%f) {\\small{%s}};", grid_x_loc-0.3, grid_y_loc+0.3, var1))
-            localPrint(string.format("\\node[right] at (%f,%f) {\\small{%s}};", grid_x_loc-0.6, grid_y_loc+0.6, var2))
+            localPrint(string.format("\\node[left] at (%f,%f) {\\small{%s}};", grid_x_loc-0.3, grid_y_loc+0.3, var2))
+            localPrint(string.format("\\node[right] at (%f,%f) {\\small{%s}};", grid_x_loc-0.6, grid_y_loc+0.6, var1))
         end
         -- Print out the top boolean column header
         if (is_multitable_seperated == false) or (d < 2) then
@@ -217,7 +227,11 @@ function draw_pgf_kmap(column, row, submaps_n, var1, var2, var3)
     end
 end
 
-function manual_draw_implacant(st, en, submaps_str, color_index, max_submaps)
+-- Function for drawing an implicant manually (meaning to give the start and endpoint, as well as optional
+-- submaps for different ones)
+function manual_draw_implicant(st, en, submaps_str)
+    local color_index = cartonaugh_env_settings.color_index
+    local max_submaps = cartonaugh_env_settings.submaps
     st = tonumber(st)
     en = tonumber(en)
     local submap_arr = split(submaps_str, ',')
@@ -225,18 +239,90 @@ function manual_draw_implacant(st, en, submaps_str, color_index, max_submaps)
     for s=1,table.getn(submap_arr),1 do
         current_submap = tonumber(submap_arr[s])
         if current_submap < max_submaps then
-            localPrint(string.format("\\fill[rounded corners=3pt,fill=%s,fill opacity=0.25,] {($(%s.center)+(-0.3,0.3)$) rectangle ($(%s.center)+(0.3,-0.3)$)};", getColor(color_index) , decimalToGreyBin(current_submap, 2) .. decimalToBin(st,4), decimalToGreyBin(current_submap, 2) .. decimalToBin(en,4)))
+            if cartonaugh_env_settings.bw == 0 then
+                localPrint(string.format("\\fill[rounded corners=3pt,fill=%s,fill opacity=0.25,] {($(%s.center)+(-0.3,0.3)$) rectangle ($(%s.center)+(0.3,-0.3)$)};", getColor(color_index) , decimalToGreyBin(current_submap, 2) .. decimalToBin(st,4), decimalToGreyBin(current_submap, 2) .. decimalToBin(en,4)))
+                color_index = color_index+1
+            end
             localPrint(string.format("\\draw[rounded corners=3pt,draw opacity=1.0,] {($(%s.center)+(-0.3,0.3)$)rectangle($(%s.center)+(0.3,-0.3)$)};", decimalToGreyBin(current_submap, 2) .. decimalToBin(st,4), decimalToGreyBin(current_submap, 2) .. decimalToBin(en,4)))
+        else
+            localPrint(string.format("\\PackageWarning{cartonaugh}{You can only draw on existing sub maps. Ignoring instruction to draw on non existing sub map number %d}", s))
+        end
+    end
+    cartonaugh_env_settings.color_index = color_index
+end
+
+-- Handler function for drawing edge implacants, figuring out orientation as well
+function manual_draw_edge_implicant(corner1, corner2, corner3, corner4, submaps_str)
+    corner1 = tonumber(corner1)
+    corner2 = tonumber(corner2)
+    corner3 = tonumber(corner3)
+    corner4 = tonumber(corner4)
+    
+    if corner1-corner2 > corner1-corner3 then
+        manual_draw_edge_implicant_orientation(corner1, corner2, submaps_str, 'n')
+        manual_draw_edge_implicant_orientation(corner3, corner4, submaps_str, 's')
+    else
+        manual_draw_edge_implicant_orientation(corner1, corner2, submaps_str, 'w')
+        manual_draw_edge_implicant_orientation(corner3, corner4, submaps_str, 'e')
+    end
+    
+    cartonaugh_env_settings.color_index = cartonaugh_env_settings.color_index+1
+        
+end
+
+-- Function to draw out a 1 edge implacant given 2 corners, the submaps, and the orientation (n, s, e, or w)
+-- TODO: Perhaps find a way to repeat the code between n/s and e/w
+-- TODO: For the mirror variable, have that apply to the lua var directly instead of having LaTeX handle it
+-- TODO: Maybe add option for squigly lines for the end instead of nothing
+-- TODO: Open up the internal inner_spread and outer_spead settings to the user
+function manual_draw_edge_implicant_orientation(corner1, corner2, submaps_str, orientation)
+    local color_index = cartonaugh_env_settings.color_index
+    local max_submaps = cartonaugh_env_settings.submaps
+    corner1 = tonumber(corner1)
+    corner2 = tonumber(corner2)
+    local submap_arr = split(submaps_str, ',')
+    local inner_spread = 0.35
+    local outer_spead = 0.55
+    --     Check if the implacent selection     
+    for s=1,table.getn(submap_arr),1 do
+        current_submap = tonumber(submap_arr[s])
+        if current_submap < max_submaps then
+            local draw_string = ""
+            local mirror = 1
+            local corner1_bin = decimalToGreyBin(current_submap, 2) .. decimalToBin(corner1,4)
+            local corner2_bin = decimalToGreyBin(current_submap, 2) .. decimalToBin(corner2,4)
+            if orientation == 'n' or orientation == 's' then
+                -- If the orientation is south, just mirror it
+                if orientation == 's' then mirror = -1 end
+                draw_string = string.format("($(%s.center)+(-%f,%f*%s)$)", corner1_bin, inner_spread, outer_spead, mirror)
+                draw_string = draw_string .. string.format("{[rounded corners=3pt] -- ($(%s.center)+(-%f,-%f*%s)$)}", corner1_bin, inner_spread, inner_spread, mirror)
+                draw_string = draw_string .. string.format("{[rounded corners=3pt] -- ($(%s.center)+(%f,-%f*%s)$)}", corner2_bin, inner_spread, inner_spread, mirror)
+                draw_string = draw_string .. string.format("-- ($(%s.center)+(%f,%f*%s)$)", corner2_bin, inner_spread, outer_spead, mirror)
+            else
+                if orientation == 'e' then mirror = -1 end
+                draw_string = string.format("($(%s.center)+(-%f*%s,%f)$)", corner1_bin, outer_spead, mirror, inner_spread)
+                draw_string = draw_string .. string.format("{[rounded corners=3pt] -- ($(%s.center)+(%f*%s,%f)$)}", corner1_bin, inner_spread, mirror, inner_spread)
+                draw_string = draw_string .. string.format("{[rounded corners=3pt] -- ($(%s.center)+(%f*%s,-%f)$)}", corner2_bin, inner_spread, mirror, inner_spread)
+                draw_string = draw_string .. string.format("-- ($(%s.center)+(-%f*%s,-%f)$)", corner2_bin, outer_spead, mirror, inner_spread)
+            end
+            if cartonaugh_env_settings.bw == 0 then
+                localPrint(string.format("\\fill[fill=%s,fill opacity=0.25,] {%s};", getColor(color_index), draw_string))
+            end
+            localPrint(string.format("\\draw[draw opacity=1.0] {%s};", draw_string))
         else
             localPrint(string.format("\\PackageWarning{cartonaugh}{You can only draw on existing sub maps. Ignoring instruction to draw on non existing sub map number %d}", s))
         end
     end
 end
 
-function draw_implacant(var_list)
+-- WORK IN PROGRESS/LONG TERM FUNCTION
+-- Goals is to eventually give \implicant{1}{x}{0}{x} for example and have it draw it out for you. 
+-- May give up on this in favor of other things...don't know
+function draw_implicant(var_list)
 --     local var_list_arr = split(var_list, ',')
     local color_index = cartonaugh_env_settings.color_index
     local max_submaps = cartonaugh_env_settings.submaps
+    localPrint("\\PackageWarning{cartonaugh}{This is a UNSTABLE and WIP function. Procede on your own}")
     
     -- Check argument for submaps greater than 1
     -- TODO: before returning print out a package error
@@ -244,27 +330,37 @@ function draw_implacant(var_list)
         for s=0,max_submaps-1,1 do
             if var_list[5+s] == '' then
                 -- TODO: Fix this
-                localPrint(string.format("\\PackageWarning{cartonaugh}{Please feed either 1, 0, or x for sub map number %d's variable boolean}", s+1))
+                localPrint(string.format("\\PackageError{cartonaugh}{Please feed either 1, 0, or x for sub map number %d's variable boolean}", s+1))
                 return 
             end 
         end
     end
     
-    local low_limit = 0 local high_limit = 0
+    local low_limit = 0 
+    local high_limit = 0
     
     for b=1,4,1 do
-        if var_list[b] == 'x' and b==4 then
+        if var_list[b] == 'x' then
+            print('a',high_limit, greyBinToDecimal(high_limit), decimalToBin(greyBinToDecimal(high_limit), 4))
+            print('b',high_limit | (1 << (b-1)), greyBinToDecimal(high_limit | (1 << (b-1))), decimalToBin(greyBinToDecimal(high_limit | (1 << (b-1))), 4))
             if greyBinToDecimal(high_limit) < greyBinToDecimal(high_limit | (1 << (b-1))) then
                 high_limit = high_limit | (1 << (b-1))
+                print(decimalToBin(greyBinToDecimal(high_limit),4), decimalToBin(greyBinToDecimal(high_limit & ~(1 << (b-2))),4))
+                if greyBinToDecimal(high_limit) < greyBinToDecimal(high_limit & ~(1 << (b-2))) then
+                    high_limit = high_limit & ~(1 << (b-2))
+                end
             end
         elseif var_list[b] == '1' then
             high_limit = high_limit | (1 << (b-1))
             low_limit = low_limit | (1 << (b-1))
         end
-    end
+        print('low_limit=', low_limit, 'high_limit=', high_limit)
+    end 
     
     local st = decimalToBin(low_limit,4)
     local en = decimalToBin(high_limit,4)
+    
+    print('low_limit', greyBinToDecimal(low_limit), 'high_limit', greyBinToDecimal(high_limit), 'st=', st, 'en=', en)
     
     for s=1,1,1 do
         current_submap = 0

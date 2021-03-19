@@ -44,7 +44,7 @@
 
 %% drawing
 \RequirePackage{tikz}
-\usetikzlibrary{calc,matrix}
+\usetikzlibrary{calc,matrix,decorations.pathmorphing}
 
 %%
 %% Helpers
@@ -204,170 +204,180 @@
 \newcount\@cartonaugh@var@colorindex@\relax
 \@cartonaugh@var@colorindex@=1\relax
 
-\DeclareDocumentCommand{\implicant}{m m m m m m} {%
+\DeclareDocumentCommand{\implicant}{m m O{0}} {%
   % bail if outside environment cartonaugh
   \@cartonaugh@func@bailoutsideenvironment@{}
   %
   \begingroup
         \directlua{
-%             draw_implacant(
-%                 \the\numexpr(#1)\relax,
-%                 \the\numexpr(#2)\relax,
-%                 "\luaescapestring{\detokenize{#3}}",
-%                 \the\numexpr(\@cartonaugh@var@colorindex@)\relax,
-%                 \the\numexpr(\@cartonaugh@var@mapsizez@)\relax
-%                 )
-            draw_implacant({
+            manual_draw_implicant(
                 "\luaescapestring{\detokenize{#1}}",
                 "\luaescapestring{\detokenize{#2}}",
-                "\luaescapestring{\detokenize{#3}}",
-                "\luaescapestring{\detokenize{#4}}",
-                "\luaescapestring{\detokenize{#5}}",
-                "\luaescapestring{\detokenize{#6}}"}
+                "\luaescapestring{\detokenize{#3}}"
                 )
         }
   \endgroup
   \advance\@cartonaugh@var@colorindex@ by 1\relax
 }
+
 \DeclareDocumentCommand{\implicantedge}{m m m m O{0}} {%
   % bail if outside environment cartonaugh
   \@cartonaugh@func@bailoutsideenvironment@{}
   %
   \begingroup
-    % helper variables {[START]
-      \newcommand{\@cartonaugh@local@orientation@}{0} % '0' is a vertical and '1' is a horizontal implicant
-      \newcommand{\@cartonaugh@local@coordinateone@}{0}
-      \newcommand{\@cartonaugh@local@coordinatetwo@}{0}
-      \newcommand{\@cartonaugh@local@mirror@}{1} % '1' or '-1' to mirror
-      \newcommand{\@cartonaugh@local@bordercontent@}{}
-      \newcommand{\@cartonaugh@local@fillcontent@}{}
-    % [END]}
-    % determinate if this is an horizontal or vertical implicant {[START]
-      \newcount\@cartonaugh@local@testcaseone@\relax
-      \newcount\@cartonaugh@local@testcasetwo@\relax
-      \@cartonaugh@local@testcaseone@=#1\relax
-      \@cartonaugh@local@testcasetwo@=#1\relax
-      \advance\@cartonaugh@local@testcaseone@ by -#2\relax
-      \advance\@cartonaugh@local@testcasetwo@ by -#3\relax
-      \ifnum\@cartonaugh@local@testcaseone@<0 \multiply\@cartonaugh@local@testcaseone@ by -1\relax\fi
-      \ifnum\@cartonaugh@local@testcasetwo@<0 \multiply\@cartonaugh@local@testcasetwo@ by -1\relax\fi
-      % test case one
-      \ifnum\@cartonaugh@local@testcaseone@<\@cartonaugh@var@mapsizex@
-        % this is a vertical implicant
-        \renewcommand{\@cartonaugh@local@orientation@}{0}
-      \else
-        % this is a horizontal implicant
-        \renewcommand{\@cartonaugh@local@orientation@}{1}
-      \fi
-      % test case two
-      \ifnum\@cartonaugh@local@testcasetwo@<\@cartonaugh@var@mapsizex@
-        % this is a vertical implicant
-        \renewcommand{\@cartonaugh@local@orientation@}{1}
-      \fi
-    % [END]}
-    % loop through specified sub maps
-    \foreach \map in {#5} {%
-      % make sure we don't try to draw on non existing sub maps
-      \ifnum\map<\@cartonaugh@var@mapsizez@
-        % loop through both parts of the marking(ie. left and right part)
-        \foreach \i in {0,1} {%
-          % set parameters depending on the part of the marking(ie. left and right part) {[START]
-            \ifnum\i=0
-              \renewcommand{\@cartonaugh@local@coordinateone@}{#1}
-              \renewcommand{\@cartonaugh@local@coordinatetwo@}{#2}
-              \renewcommand{\@cartonaugh@local@mirror@}{1}
-            \else
-              \renewcommand{\@cartonaugh@local@coordinateone@}{#3}
-              \renewcommand{\@cartonaugh@local@coordinatetwo@}{#4}
-              \renewcommand{\@cartonaugh@local@mirror@}{-1}
-            \fi
-          % [END]}
-          % calculate cell numbers for the specified sub map {[START]
-            \newcount\@cartonaugh@local@coordinateonecounter@\relax
-            \newcount\@cartonaugh@local@coordinatetwocounter@\relax
-            \@cartonaugh@local@coordinateonecounter@=\map\relax
-            \@cartonaugh@local@coordinatetwocounter@=\map\relax
-            \multiply\@cartonaugh@local@coordinateonecounter@ by 16\relax
-            \multiply\@cartonaugh@local@coordinatetwocounter@ by 16\relax
-            \advance\@cartonaugh@local@coordinateonecounter@ by \@cartonaugh@local@coordinateone@\relax
-            \advance\@cartonaugh@local@coordinatetwocounter@ by \@cartonaugh@local@coordinatetwo@\relax
-            \renewcommand{\@cartonaugh@local@coordinateone@}{\@cartonaugh@local@coordinateonecounter@}
-            \renewcommand{\@cartonaugh@local@coordinatetwo@}{\@cartonaugh@local@coordinatetwocounter@}
-          % [END]}
-          % select drawing content depending on orientation {[START]
-            \ifnum\@cartonaugh@local@orientation@=0
-              % this is a vertical implicant
-              \renewcommand{\@cartonaugh@local@fillcontent@}{%
-                ($(\@cartonaugh@func@decimaltobin@{\@cartonaugh@local@coordinateone@}.center)+(-.3,.6*\@cartonaugh@local@mirror@)$)
-                --
-                ($(\@cartonaugh@func@decimaltobin@{\@cartonaugh@local@coordinatetwo@}.center)+(.3,.6*\@cartonaugh@local@mirror@)$)
-                { [rounded corners=3pt] --
-                ($(\@cartonaugh@func@decimaltobin@{\@cartonaugh@local@coordinatetwo@}.center)+(.3,-.3*\@cartonaugh@local@mirror@)$) }
-                { [rounded corners=3pt] --
-                ($(\@cartonaugh@func@decimaltobin@{\@cartonaugh@local@coordinateone@}.center)+(-.3,-.3*\@cartonaugh@local@mirror@)$) }
-                -- cycle
-              }
-              \renewcommand{\@cartonaugh@local@bordercontent@}{%
-                ($(\@cartonaugh@func@decimaltobin@{\@cartonaugh@local@coordinatetwo@}.center)+(.3,.6*\@cartonaugh@local@mirror@)$)
-                { [rounded corners=3pt] --
-                ($(\@cartonaugh@func@decimaltobin@{\@cartonaugh@local@coordinatetwo@}.center)+(.3,-.3*\@cartonaugh@local@mirror@)$) }
-                { [rounded corners=3pt] --
-                ($(\@cartonaugh@func@decimaltobin@{\@cartonaugh@local@coordinateone@}.center)+(-.3,-.3*\@cartonaugh@local@mirror@)$) }
-                --
-                ($(\@cartonaugh@func@decimaltobin@{\@cartonaugh@local@coordinateone@}.center)+(-.3,.6*\@cartonaugh@local@mirror@)$)
-              }
-            \else
-              % this is a horizontal implicant
-              \renewcommand{\@cartonaugh@local@fillcontent@}{%
-                ($(\@cartonaugh@func@decimaltobin@{\@cartonaugh@local@coordinatetwo@}.center)+(-.6*\@cartonaugh@local@mirror@,-.3)$)
-                --
-                ($(\@cartonaugh@func@decimaltobin@{\@cartonaugh@local@coordinateone@}.center)+(-.6*\@cartonaugh@local@mirror@,.3)$)
-                { [rounded corners=3pt] --
-                ($(\@cartonaugh@func@decimaltobin@{\@cartonaugh@local@coordinateone@}.center)+(.3*\@cartonaugh@local@mirror@,.3)$) }
-                { [rounded corners=3pt] --
-                ($(\@cartonaugh@func@decimaltobin@{\@cartonaugh@local@coordinatetwo@}.center)+(.3*\@cartonaugh@local@mirror@,-.3)$) }
-                -- cycle
-              }
-              \renewcommand{\@cartonaugh@local@bordercontent@}{%
-                ($(\@cartonaugh@func@decimaltobin@{\@cartonaugh@local@coordinateone@}.center)+(-.6*\@cartonaugh@local@mirror@,.3)$)
-                { [rounded corners=3pt] --
-                ($(\@cartonaugh@func@decimaltobin@{\@cartonaugh@local@coordinateone@}.center)+(.3*\@cartonaugh@local@mirror@,.3)$) }
-                { [rounded corners=3pt] --
-                ($(\@cartonaugh@func@decimaltobin@{\@cartonaugh@local@coordinatetwo@}.center)+(.3*\@cartonaugh@local@mirror@,-.3)$) }
-                --
-                ($(\@cartonaugh@func@decimaltobin@{\@cartonaugh@local@coordinatetwo@}.center)+(-.6*\@cartonaugh@local@mirror@,-.3)$)
-              }
-            \fi
-          % [END]}
-          % draw
-          % only fill marking when \@cartonaugh@var@bw@ = '0'
-          \ifnum0=\@cartonaugh@var@bw@
-            \fill[
-              sharp corners,
-              fill=\@cartonaugh@func@decimaltocolor@{\@cartonaugh@var@colorindex@},
-              fill opacity=0.25,
-            ] {
-              \@cartonaugh@local@fillcontent@%
-            };
-          \fi
-          \draw[
-            sharp corners,
-            draw opacity=1.0,
-          ] {
-            \@cartonaugh@local@bordercontent@%
-          };
+        \directlua{
+            manual_draw_edge_implicant(
+                "\luaescapestring{\detokenize{#1}}",
+                "\luaescapestring{\detokenize{#2}}",
+                "\luaescapestring{\detokenize{#3}}",
+                "\luaescapestring{\detokenize{#4}}",
+                "\luaescapestring{\detokenize{#5}}"
+                )
         }
-      \else
-        \PackageWarning{cartonaugh}{%
-          You can only draw on existing sub maps.
-          Ignoring instruction to draw on non existing sub map number \map%
-        }
-      \fi
-    }
   \endgroup
-  % mark color as used
   \advance\@cartonaugh@var@colorindex@ by 1\relax
 }
+
+
+% \DeclareDocumentCommand{\implicantedge}{m m m m O{0}} {%
+%   bail if outside environment cartonaugh
+%   \@cartonaugh@func@bailoutsideenvironment@{}
+%   
+%   \begingroup
+%     helper variables {[START]
+%       \newcommand{\@cartonaugh@local@orientation@}{0} % '0' is a vertical and '1' is a horizontal implicant
+%       \newcommand{\@cartonaugh@local@coordinateone@}{0}
+%       \newcommand{\@cartonaugh@local@coordinatetwo@}{0}
+%       \newcommand{\@cartonaugh@local@mirror@}{1} % '1' or '-1' to mirror
+%       \newcommand{\@cartonaugh@local@bordercontent@}{}
+%       \newcommand{\@cartonaugh@local@fillcontent@}{}
+%     [END]}
+%     determinate if this is an horizontal or vertical implicant {[START]
+%       \newcount\@cartonaugh@local@testcaseone@\relax
+%       \newcount\@cartonaugh@local@testcasetwo@\relax
+%       \@cartonaugh@local@testcaseone@=#1\relax
+%       \@cartonaugh@local@testcasetwo@=#1\relax
+%       \advance\@cartonaugh@local@testcaseone@ by -#2\relax
+%       \advance\@cartonaugh@local@testcasetwo@ by -#3\relax
+%       \ifnum\@cartonaugh@local@testcaseone@<0 \multiply\@cartonaugh@local@testcaseone@ by -1\relax\fi
+%       \ifnum\@cartonaugh@local@testcasetwo@<0 \multiply\@cartonaugh@local@testcasetwo@ by -1\relax\fi
+%       test case one
+%       \ifnum\@cartonaugh@local@testcaseone@<\@cartonaugh@var@mapsizex@
+%         this is a vertical implicant
+%         \renewcommand{\@cartonaugh@local@orientation@}{0}
+%       \else
+%         this is a horizontal implicant
+%         \renewcommand{\@cartonaugh@local@orientation@}{1}
+%       \fi
+%       test case two
+%       \ifnum\@cartonaugh@local@testcasetwo@<\@cartonaugh@var@mapsizex@
+%         this is a vertical implicant
+%         \renewcommand{\@cartonaugh@local@orientation@}{1}
+%       \fi
+%     [END]}
+%     loop through specified sub maps
+%     \foreach \map in {#5} {%
+%       make sure we don't try to draw on non existing sub maps
+%       \ifnum\map<\@cartonaugh@var@mapsizez@
+%         loop through both parts of the marking(ie. left and right part)
+%         \foreach \i in {0,1} {%
+%           set parameters depending on the part of the marking(ie. left and right part) {[START]
+%             \ifnum\i=0
+%               \renewcommand{\@cartonaugh@local@coordinateone@}{#1}
+%               \renewcommand{\@cartonaugh@local@coordinatetwo@}{#2}
+%               \renewcommand{\@cartonaugh@local@mirror@}{1}
+%             \else
+%               \renewcommand{\@cartonaugh@local@coordinateone@}{#3}
+%               \renewcommand{\@cartonaugh@local@coordinatetwo@}{#4}
+%               \renewcommand{\@cartonaugh@local@mirror@}{-1}
+%             \fi
+%           [END]}
+%           calculate cell numbers for the specified sub map {[START]
+%             \newcount\@cartonaugh@local@coordinateonecounter@\relax
+%             \newcount\@cartonaugh@local@coordinatetwocounter@\relax
+%             \@cartonaugh@local@coordinateonecounter@=\map\relax
+%             \@cartonaugh@local@coordinatetwocounter@=\map\relax
+%             \multiply\@cartonaugh@local@coordinateonecounter@ by 16\relax
+%             \multiply\@cartonaugh@local@coordinatetwocounter@ by 16\relax
+%             \advance\@cartonaugh@local@coordinateonecounter@ by \@cartonaugh@local@coordinateone@\relax
+%             \advance\@cartonaugh@local@coordinatetwocounter@ by \@cartonaugh@local@coordinatetwo@\relax
+%             \renewcommand{\@cartonaugh@local@coordinateone@}{\@cartonaugh@local@coordinateonecounter@}
+%             \renewcommand{\@cartonaugh@local@coordinatetwo@}{\@cartonaugh@local@coordinatetwocounter@}
+%           [END]}
+%           select drawing content depending on orientation {[START]
+%             \ifnum\@cartonaugh@local@orientation@=0
+%               this is a vertical implicant
+%               \renewcommand{\@cartonaugh@local@fillcontent@}{%
+%                 ($(\@cartonaugh@func@decimaltobin@{\@cartonaugh@local@coordinateone@}.center)+(-.3,.6*\@cartonaugh@local@mirror@)$)
+%                 --
+%                 ($(\@cartonaugh@func@decimaltobin@{\@cartonaugh@local@coordinatetwo@}.center)+(.3,.6*\@cartonaugh@local@mirror@)$)
+%                 { [rounded corners=3pt] --
+%                 ($(\@cartonaugh@func@decimaltobin@{\@cartonaugh@local@coordinatetwo@}.center)+(.3,-.3*\@cartonaugh@local@mirror@)$) }
+%                 { [rounded corners=3pt] --
+%                 ($(\@cartonaugh@func@decimaltobin@{\@cartonaugh@local@coordinateone@}.center)+(-.3,-.3*\@cartonaugh@local@mirror@)$) }
+%                 -- cycle
+%               }
+%               \renewcommand{\@cartonaugh@local@bordercontent@}{%
+%                 ($(\@cartonaugh@func@decimaltobin@{\@cartonaugh@local@coordinatetwo@}.center)+(.3,.6*\@cartonaugh@local@mirror@)$)
+%                 { [rounded corners=3pt] --
+%                 ($(\@cartonaugh@func@decimaltobin@{\@cartonaugh@local@coordinatetwo@}.center)+(.3,-.3*\@cartonaugh@local@mirror@)$) }
+%                 { [rounded corners=3pt] --
+%                 ($(\@cartonaugh@func@decimaltobin@{\@cartonaugh@local@coordinateone@}.center)+(-.3,-.3*\@cartonaugh@local@mirror@)$) }
+%                 --
+%                 ($(\@cartonaugh@func@decimaltobin@{\@cartonaugh@local@coordinateone@}.center)+(-.3,.6*\@cartonaugh@local@mirror@)$)
+%               }
+%             \else
+%               this is a horizontal implicant
+%               \renewcommand{\@cartonaugh@local@fillcontent@}{%
+%                 ($(\@cartonaugh@func@decimaltobin@{\@cartonaugh@local@coordinatetwo@}.center)+(-.6*\@cartonaugh@local@mirror@,-.3)$)
+%                 --
+%                 ($(\@cartonaugh@func@decimaltobin@{\@cartonaugh@local@coordinateone@}.center)+(-.6*\@cartonaugh@local@mirror@,.3)$)
+%                 { [rounded corners=3pt] --
+%                 ($(\@cartonaugh@func@decimaltobin@{\@cartonaugh@local@coordinateone@}.center)+(.3*\@cartonaugh@local@mirror@,.3)$) }
+%                 { [rounded corners=3pt] --
+%                 ($(\@cartonaugh@func@decimaltobin@{\@cartonaugh@local@coordinatetwo@}.center)+(.3*\@cartonaugh@local@mirror@,-.3)$) }
+%                 -- cycle
+%               }
+%               \renewcommand{\@cartonaugh@local@bordercontent@}{%
+%                 ($(\@cartonaugh@func@decimaltobin@{\@cartonaugh@local@coordinateone@}.center)+(-.6*\@cartonaugh@local@mirror@,.3)$)
+%                 { [rounded corners=3pt] --
+%                 ($(\@cartonaugh@func@decimaltobin@{\@cartonaugh@local@coordinateone@}.center)+(.3*\@cartonaugh@local@mirror@,.3)$) }
+%                 { [rounded corners=3pt] --
+%                 ($(\@cartonaugh@func@decimaltobin@{\@cartonaugh@local@coordinatetwo@}.center)+(.3*\@cartonaugh@local@mirror@,-.3)$) }
+%                 --
+%                 ($(\@cartonaugh@func@decimaltobin@{\@cartonaugh@local@coordinatetwo@}.center)+(-.6*\@cartonaugh@local@mirror@,-.3)$)
+%               }
+%             \fi
+%           [END]}
+%           draw
+%           only fill marking when \@cartonaugh@var@bw@ = '0'
+%           \ifnum0=\@cartonaugh@var@bw@
+%             \fill[
+%               sharp corners,
+%               fill=\@cartonaugh@func@decimaltocolor@{\@cartonaugh@var@colorindex@},
+%               fill opacity=0.25,
+%             ] {
+%               \@cartonaugh@local@fillcontent@%
+%             };
+%           \fi
+%           \draw[
+%             sharp corners,
+%             draw opacity=1.0,
+%           ] {
+%             \@cartonaugh@local@bordercontent@%
+%           };
+%         }
+%       \else
+%         \PackageWarning{cartonaugh}{%
+%           You can only draw on existing sub maps.
+%           Ignoring instruction to draw on non existing sub map number \map%
+%         }
+%       \fi
+%     }
+%   \endgroup
+%   mark color as used
+%   \advance\@cartonaugh@var@colorindex@ by 1\relax
+% }
 \DeclareDocumentCommand{\implicantcorner}{O{0}} {%
   % bail if outside environment cartonaugh
   \@cartonaugh@func@bailoutsideenvironment@{}
