@@ -4,6 +4,7 @@ CARTONAUGH_COLORS = {'red', 'green', 'yellow', 'cyan', 'blue', 'magenta', 'cyan'
 CARTONAUGH_DEFAULT_COLOR = 'black'
 
 cartonaugh_env_settings = {}
+used_cells = {}
 
 -- Function that is used to either print to LaTeX or to the console
 -- Used for debugging mode
@@ -125,7 +126,7 @@ function generateKMap(column, row, grid_numb)
 end
 
 
-function init_cartonaught_env(numb_cols, numb_row, numb_submaps, is_bw, var12_str, var34_str, var56_str)
+function init_cartonaught_env(numb_cols, numb_row, numb_submaps, is_bw, var12_str, var34_str, var56_str, is_submap_seperated)
     -- Change the default texts depending on the number of submaps if not custom name has been given
     -- TODO: Get this to actually work
     if var12_str == 'X_1X_0' and var34_str == 'X_3X_2' and var56_str == 'X_5X_4' then
@@ -148,18 +149,25 @@ function init_cartonaught_env(numb_cols, numb_row, numb_submaps, is_bw, var12_st
         },
         color_index = 1,
     }   
+    used_cells = {}
     
-    draw_pgf_kmap(numb_cols, numb_row, numb_submaps, var12_str, var34_str, var56_str)
+    if is_submap_seperated == 0 then
+        is_submap_seperated = false
+    else
+        is_submap_seperated = true
+    end
+    
+    draw_pgf_kmap(numb_cols, numb_row, numb_submaps, var12_str, var34_str, var56_str, is_submap_seperated)
 end
 
 -- Function to generate the k-maps
 -- NOTE: Each variable/cell in the k-map is 1cm. This is so that everything alings with each other just be adding
 -- the number of row and column. It's a bit of hack, but for now it will stay this way. Resizing of the matrix
 -- will be done with the scale option in the future
-function draw_pgf_kmap(column, row, submaps_n, var1, var2, var3)
+function draw_pgf_kmap(column, row, submaps_n, var1, var2, var3, is_submap_seperated)
     submaps_n = submaps_n-1
     -- TODO: Transform the following settings variables into arguments
-    local is_multitable_seperated = true    -- Setting to determine if the graphs are drawn with a sperator line or distanced out
+    local is_multitable_seperated = is_submap_seperated    -- Setting to determine if the graphs are drawn with a sperator line or distanced out
     local graph_seperator = 1.5                -- Seperation lenght between kmaps if is_multitable_seperated=false
     local kmaplevel_seperator_lenght = 0.1   -- Setting to determine the seperator line's thickness if is_multitable_seperated=true
     local line_width = 0.015                 -- Set the line thickness of things here
@@ -315,6 +323,45 @@ function manual_draw_edge_implicant_orientation(corner1, corner2, submaps_str, o
     end
 end
 
+-- Function to draw the corner implicants. Only usable on 4x4 matrices
+function manual_draw_corner_implicant(submaps_str)
+    local corner_arr = {0, 2, 8, 10}
+    local submap_arr = split(submaps_str, ',')
+    local max_submaps = cartonaugh_env_settings.submaps
+    local color = cartonaugh_env_settings.color_index
+    local inner_spread = 0.35
+    local outer_spread = 0.55
+    
+    if cartonaugh_env_settings.cols ~= 4 or cartonaugh_env_settings.rows ~= 4 then
+        localPrint("\\PackageError{cartonaugh}{Cannot use a corner implicant on anything but a 4x4. Sorry!}")
+        return
+    end
+    
+    for s=1,table.getn(submap_arr),1 do
+        current_submap = tonumber(submap_arr[s])
+        if current_submap < max_submaps then
+            for c=0,3,1 do
+                local x_mirror = 1-(2*(c%2))
+                local y_mirror = 1-(2*(c//2))
+                local corner = decimalToGreyBin(current_submap, 2) .. decimalToBin(corner_arr[c+1],4)
+                -- Create the string to draw the corners
+                local draw_string = string.format("($(%s.center)+(-%f*%d,%f*%d)$)--($(%s.center)+(%f*%d,%f*%d)$)", corner, outer_spread, x_mirror, outer_spread, y_mirror, corner, inner_spread, x_mirror, outer_spread, y_mirror)
+                draw_string = draw_string .. string.format("{ [rounded corners=3pt] --($(%s.center)+(%f*%d,-%f*%d)$) }", corner, inner_spread, x_mirror, inner_spread, y_mirror)
+                draw_string = draw_string .. string.format("--($(%s.center)+(-%f*%d,-%f*%d)$) -- cycle", corner, outer_spread, x_mirror, inner_spread, y_mirror)
+                if cartonaugh_env_settings.bw == 0 then
+                    localPrint(string.format("\\fill[fill=%s,fill opacity=0.25,] {%s};", getColor(color), draw_string))
+                end
+                localPrint(string.format("\\draw[sharp corners, draw opacity=1.0] {%s};", draw_string))
+            end
+        else
+            localPrint(string.format("\\PackageWarning{cartonaugh}{You can only draw on existing sub maps. Ignoring instruction to draw on non existing sub map number %d}", s))
+        end
+    end
+    
+    cartonaugh_env_settings.color_index = cartonaugh_env_settings.color_index+1
+
+end
+
 -- WORK IN PROGRESS/LONG TERM FUNCTION
 -- Goals is to eventually give \implicant{1}{x}{0}{x} for example and have it draw it out for you. 
 -- May give up on this in favor of other things...don't know
@@ -375,4 +422,35 @@ function draw_implicant(var_list)
         end
     end
     cartonaugh_env_settings.color_index = color_index
+end
+
+function autoterms(what_to_write) 
+   local max_cells = cartonaugh_env_settings.submaps * cartonaugh_env_settings.cols * cartonaugh_env_settings.rows
+   for cell=0,max_cells-1,1 do
+       if used_cells[cell] == nil then
+           used_cells[cell] = true
+           localPrint(string.format("\\path (%s) node {%s};", decimalToBin(cell, 6), what_to_write))
+       end
+   end
+end
+
+function manualterms(what_to_write) 
+    local what_to_write_arr = split(what_to_write, ',')
+    for cell=0,table.getn(what_to_write_arr)-1,1 do
+        if used_cells[cell] == nil then
+            used_cells[cell] = true
+            localPrint(string.format("\\path (%s) node {%s};", decimalToBin(cell, 6), what_to_write_arr[cell+1]))
+        end
+    end
+end
+
+function write_to_cell(cells, what_to_write)
+    local cells_arr = split(cells, ',')
+    for c=1,table.getn(cells_arr),1 do
+        local cell = tonumber(cells_arr[c])
+        if used_cells[cell] == nil then
+            used_cells[cell] = true
+            localPrint(string.format("\\path (%s) node {%s};", decimalToBin(cell, 6), what_to_write))
+        end
+    end
 end
