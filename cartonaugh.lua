@@ -1,7 +1,7 @@
 DEBUG_FLAG = 0
 
-CARTONAUGH_COLORS = {'red', 'green', 'yellow', 'cyan', 'blue', 'magenta', 'cyan'}
-CARTONAUGH_DEFAULT_COLOR = 'black'
+CARTONAUGH_COLORS = {'red', 'green', 'yellow', 'cyan', 'blue', 'magenta'}
+CARTONAUGH_DEFAULT_COLOR = 'cyan'
 
 cartonaugh_env_settings = {}
 used_cells = {}
@@ -249,14 +249,14 @@ function manual_draw_implicant(st, en, submaps_str)
         if current_submap < max_submaps then
             if cartonaugh_env_settings.bw == 0 then
                 localPrint(string.format("\\fill[rounded corners=3pt,fill=%s,fill opacity=0.25,] {($(%s.center)+(-0.3,0.3)$) rectangle ($(%s.center)+(0.3,-0.3)$)};", getColor(color_index) , decimalToGreyBin(current_submap, 2) .. decimalToBin(st,4), decimalToGreyBin(current_submap, 2) .. decimalToBin(en,4)))
-                color_index = color_index+1
+--                 color_index = color_index+1
             end
             localPrint(string.format("\\draw[rounded corners=3pt,draw opacity=1.0,] {($(%s.center)+(-0.3,0.3)$)rectangle($(%s.center)+(0.3,-0.3)$)};", decimalToGreyBin(current_submap, 2) .. decimalToBin(st,4), decimalToGreyBin(current_submap, 2) .. decimalToBin(en,4)))
         else
             localPrint(string.format("\\PackageWarning{cartonaugh}{You can only draw on existing sub maps. Ignoring instruction to draw on non existing sub map number %d}", s))
         end
     end
-    cartonaugh_env_settings.color_index = color_index
+    cartonaugh_env_settings.color_index = cartonaugh_env_settings.color_index+1
 end
 
 -- Handler function for drawing edge implacants, figuring out orientation as well

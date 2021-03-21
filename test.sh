@@ -17,7 +17,7 @@ mkdir actual result
 
 processTexFile() {
   printf "Processing '%s'\n" "${1}";
-  pdflatex -halt-on-error -interaction=nonstopmode -output-directory actual "${1}" > /dev/null 2>&1
+  lualatex -halt-on-error -interaction=nonstopmode -output-directory actual "${1}" > /dev/null 2>&1
   if [ "$?" == 0 ]; then
     printf "Processing of '%s' finished\n" "${1}";
   else
@@ -25,12 +25,12 @@ processTexFile() {
   fi
 }
 
-# run pdflatex on all files ending with ".tex" and output to folder actual
+# run lualatex on all files ending with ".tex" and output to folder actual
 for file in *.tex; do
   (processTexFile "${file}")& # run i parallel
 done;
 
-# wait for all pdflatex children
+# wait for all lualatex children
 wait
 
 # if expected folder exist compare to actual
