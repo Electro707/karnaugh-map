@@ -125,7 +125,6 @@ function generateKMap(column, row, grid_numb)
     return return_str
 end
 
-
 function init_cartonaught_env(numb_cols, numb_row, numb_submaps, is_bw, var12_str, var34_str, var56_str, is_submap_seperated)
     -- Change the default texts depending on the number of submaps if not custom name has been given
     -- TODO: Get this to actually work
@@ -148,15 +147,15 @@ function init_cartonaught_env(numb_cols, numb_row, numb_submaps, is_bw, var12_st
                 v56 = var56_str,
         },
         color_index = 1,
-    }   
+    }
     used_cells = {}
-    
+
     if is_submap_seperated == 0 then
         is_submap_seperated = false
     else
         is_submap_seperated = true
     end
-    
+
     draw_pgf_kmap(numb_cols, numb_row, numb_submaps, var12_str, var34_str, var56_str, is_submap_seperated)
 end
 
@@ -243,7 +242,7 @@ function manual_draw_implicant(st, en, submaps_str)
     st = tonumber(st)
     en = tonumber(en)
     local submap_arr = split(submaps_str, ',')
-    --     Check if the implacent selection     
+    --     Check if the implacent selection
     for s=1,table.getn(submap_arr),1 do
         current_submap = tonumber(submap_arr[s])
         if current_submap < max_submaps then
@@ -265,7 +264,7 @@ function manual_draw_edge_implicant(corner1, corner2, corner3, corner4, submaps_
     corner2 = tonumber(corner2)
     corner3 = tonumber(corner3)
     corner4 = tonumber(corner4)
-    
+
     if corner1-corner2 > corner1-corner3 then
         manual_draw_edge_implicant_orientation(corner1, corner2, submaps_str, 'n')
         manual_draw_edge_implicant_orientation(corner3, corner4, submaps_str, 's')
@@ -273,9 +272,9 @@ function manual_draw_edge_implicant(corner1, corner2, corner3, corner4, submaps_
         manual_draw_edge_implicant_orientation(corner1, corner2, submaps_str, 'w')
         manual_draw_edge_implicant_orientation(corner3, corner4, submaps_str, 'e')
     end
-    
+
     cartonaugh_env_settings.color_index = cartonaugh_env_settings.color_index+1
-        
+
 end
 
 -- Function to draw out a 1 edge implacant given 2 corners, the submaps, and the orientation (n, s, e, or w)
@@ -291,7 +290,7 @@ function manual_draw_edge_implicant_orientation(corner1, corner2, submaps_str, o
     local submap_arr = split(submaps_str, ',')
     local inner_spread = 0.35
     local outer_spead = 0.55
-    --     Check if the implacent selection     
+    --     Check if the implacent selection
     for s=1,table.getn(submap_arr),1 do
         current_submap = tonumber(submap_arr[s])
         if current_submap < max_submaps then
@@ -331,12 +330,12 @@ function manual_draw_corner_implicant(submaps_str)
     local color = cartonaugh_env_settings.color_index
     local inner_spread = 0.35
     local outer_spread = 0.55
-    
+
     if cartonaugh_env_settings.cols ~= 4 or cartonaugh_env_settings.rows ~= 4 then
         localPrint("\\PackageError{cartonaugh}{Cannot use a corner implicant on anything but a 4x4. Sorry!}")
         return
     end
-    
+
     for s=1,table.getn(submap_arr),1 do
         current_submap = tonumber(submap_arr[s])
         if current_submap < max_submaps then
@@ -357,20 +356,20 @@ function manual_draw_corner_implicant(submaps_str)
             localPrint(string.format("\\PackageWarning{cartonaugh}{You can only draw on existing sub maps. Ignoring instruction to draw on non existing sub map number %d}", s))
         end
     end
-    
+
     cartonaugh_env_settings.color_index = cartonaugh_env_settings.color_index+1
 
 end
 
 -- WORK IN PROGRESS/LONG TERM FUNCTION
--- Goals is to eventually give \implicant{1}{x}{0}{x} for example and have it draw it out for you. 
+-- Goals is to eventually give \implicant{1}{x}{0}{x} for example and have it draw it out for you.
 -- May give up on this in favor of other things...don't know
 function draw_implicant(var_list)
 --     local var_list_arr = split(var_list, ',')
     local color_index = cartonaugh_env_settings.color_index
     local max_submaps = cartonaugh_env_settings.submaps
     localPrint("\\PackageWarning{cartonaugh}{This is a UNSTABLE and WIP function. Procede on your own}")
-    
+
     -- Check argument for submaps greater than 1
     -- TODO: before returning print out a package error
     if max_submaps > 1 then
@@ -378,14 +377,14 @@ function draw_implicant(var_list)
             if var_list[5+s] == '' then
                 -- TODO: Fix this
                 localPrint(string.format("\\PackageError{cartonaugh}{Please feed either 1, 0, or x for sub map number %d's variable boolean}", s+1))
-                return 
-            end 
+                return
+            end
         end
     end
-    
-    local low_limit = 0 
+
+    local low_limit = 0
     local high_limit = 0
-    
+
     for b=1,4,1 do
         if var_list[b] == 'x' then
             print('a',high_limit, greyBinToDecimal(high_limit), decimalToBin(greyBinToDecimal(high_limit), 4))
@@ -402,13 +401,13 @@ function draw_implicant(var_list)
             low_limit = low_limit | (1 << (b-1))
         end
         print('low_limit=', low_limit, 'high_limit=', high_limit)
-    end 
-    
+    end
+
     local st = decimalToBin(low_limit,4)
     local en = decimalToBin(high_limit,4)
-    
+
     print('low_limit', greyBinToDecimal(low_limit), 'high_limit', greyBinToDecimal(high_limit), 'st=', st, 'en=', en)
-    
+
     for s=1,1,1 do
         current_submap = 0
         if current_submap < max_submaps then
@@ -424,7 +423,7 @@ function draw_implicant(var_list)
     cartonaugh_env_settings.color_index = color_index
 end
 
-function autoterms(what_to_write) 
+function autoterms(what_to_write)
    local max_cells = cartonaugh_env_settings.submaps * cartonaugh_env_settings.cols * cartonaugh_env_settings.rows
    for cell=0,max_cells-1,1 do
        if used_cells[cell] == nil then
@@ -434,7 +433,7 @@ function autoterms(what_to_write)
    end
 end
 
-function manualterms(what_to_write) 
+function manualterms(what_to_write)
     local what_to_write_arr = split(what_to_write, ',')
     for cell=0,table.getn(what_to_write_arr)-1,1 do
         if used_cells[cell] == nil then

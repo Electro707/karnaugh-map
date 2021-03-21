@@ -21,8 +21,8 @@
 %% same distribution. (The sources need not necessarily be
 %% in the same archive or directory.)
 %%
-%% Copyright (C) 2015, 2016, 2017 Mattias Jacobsson and contributors
-%% This work, karnaugh-map, is written from the ground up by Mattias Jacobsson. However the general implementation idea is based on the work published on [TeX - LaTeX Stack Exchange](https://tex.stackexchange.com) by [Ignasi](https://tex.stackexchange.com/users/1952/ignasi) found [here](https://tex.stackexchange.com/a/140581) and [here](https://tex.stackexchange.com/a/36879) which is licensed under [CC BY-SA](https://creativecommons.org/licenses/by-sa/3.0/). karnaugh-map is therefore licensed under [CC BY-SA](https://creativecommons.org/licenses/by-sa/3.0/). Contributors include [Oscar Gustafsson](https://github.com/oscargus).
+%% Copyright (C) 2021 Jamal Bouajjaj | 2015, 2016, 2017 Mattias Jacobsson and contributors
+%% This work, cartonaugh, is a fork of Mattias Jacobsson's [karnaugh-map](https://github.com/2pi/karnaugh-map) package with major changes. As the copyright on the base package is under [CC BY-SA](https://creativecommons.org/licenses/by-sa/3.0/), so is this fork.
 %%
 
 \NeedsTeXFormat{LaTeX2e}
@@ -64,10 +64,8 @@
 
 \newcommand{\cartonaughSetColorAtIndex}[2]{\directlua{CARTONAUGH_COLORS[\the\numexpr(#1)\relax] = "\luaescapestring{#2}"}}
 
-%% store map size
+%% store whether a kmap has been created
 \newcommand{\@cartonaugh@var@isactive@}{0}
-
-%% render in black and white or color default to '0'(false/color)
 \NewDocumentEnvironment{cartonaugh}{s O{4} O{4} O{1} O{$X_1X_0$} O{$X_3X_2$} O{$X_5X_4$} O{0}} {%
   \begingroup
     % store map size {[START]
@@ -92,104 +90,90 @@
     \end{tikzpicture}
   \endgroup
 }
-
-%%
-%% Commands for filling out the cells
-%%
-
-
 \DeclareDocumentCommand{\autoterms}{O{-}} {%
   \@cartonaugh@func@bailoutsideenvironment@{}
   %
-    \directlua{
-        autoterms("\luaescapestring{\detokenize{#1}}", '-')
-    }
+  \directlua{
+      autoterms("\luaescapestring{\detokenize{#1}}", '-')
+  }
 }
 \DeclareDocumentCommand{\indeterminants}{m} {%
   % bail if outside environment cartonaugh
   \@cartonaugh@func@bailoutsideenvironment@{}
   %
-    \directlua{
-        write_to_cell("\luaescapestring{\detokenize{#1}}", '-')
-    }
+  \directlua{
+      write_to_cell("\luaescapestring{\detokenize{#1}}", '-')
+  }
 }
 \DeclareDocumentCommand{\manualterms}{m} {%
   % bail if outside environment cartonaugh
   \@cartonaugh@func@bailoutsideenvironment@{}
+  %
   \directlua{
-        manualterms("\luaescapestring{\detokenize{#1}}")
-    }
+      manualterms("\luaescapestring{\detokenize{#1}}")
+  }
 }
 \DeclareDocumentCommand{\maxterms}{m} {%
   % bail if outside environment cartonaugh
   \@cartonaugh@func@bailoutsideenvironment@{}
   %
-%   \terms{#1}{0}
-    \directlua{
-        write_to_cell("\luaescapestring{\detokenize{#1}}", '0')
-    }
+  \directlua{
+      write_to_cell("\luaescapestring{\detokenize{#1}}", '0')
+  }
 }
 \DeclareDocumentCommand{\minterms}{m} {%
   % bail if outside environment cartonaugh
   \@cartonaugh@func@bailoutsideenvironment@{}
   %
-    \directlua{
-        write_to_cell("\luaescapestring{\detokenize{#1}}", '1')
-    }
+  \directlua{
+      write_to_cell("\luaescapestring{\detokenize{#1}}", '1')
+  }
 }
 \DeclareDocumentCommand{\terms}{m m} {%
   % bail if outside environment cartonaugh
   \@cartonaugh@func@bailoutsideenvironment@{}
   %
   \directlua{
-        write_to_cell("\luaescapestring{\detokenize{#1}}",
-        "\luaescapestring{\detokenize{#2}}")
-    }
+    write_to_cell("\luaescapestring{\detokenize{#1}}",
+    "\luaescapestring{\detokenize{#2}}")
+  }
 }
-
-%%
-%% Commands for marking the cells
-%%
-
 \DeclareDocumentCommand{\implicant}{m m O{0}} {%
   % bail if outside environment cartonaugh
   \@cartonaugh@func@bailoutsideenvironment@{}
   %
-        \directlua{
-            manual_draw_implicant(
-                "\luaescapestring{\detokenize{#1}}",
-                "\luaescapestring{\detokenize{#2}}",
-                "\luaescapestring{\detokenize{#3}}"
-                )
-        }
+  \directlua{
+    manual_draw_implicant(
+      "\luaescapestring{\detokenize{#1}}",
+      "\luaescapestring{\detokenize{#2}}",
+      "\luaescapestring{\detokenize{#3}}"
+      )
+  }
 }
-
 \DeclareDocumentCommand{\implicantedge}{m m m m O{0}} {%
   % bail if outside environment cartonaugh
   \@cartonaugh@func@bailoutsideenvironment@{}
   %
-        \directlua{
-            manual_draw_edge_implicant(
-                "\luaescapestring{\detokenize{#1}}",
-                "\luaescapestring{\detokenize{#2}}",
-                "\luaescapestring{\detokenize{#3}}",
-                "\luaescapestring{\detokenize{#4}}",
-                "\luaescapestring{\detokenize{#5}}"
-                )
-        }
+  \directlua{
+    manual_draw_edge_implicant(
+      "\luaescapestring{\detokenize{#1}}",
+      "\luaescapestring{\detokenize{#2}}",
+      "\luaescapestring{\detokenize{#3}}",
+      "\luaescapestring{\detokenize{#4}}",
+      "\luaescapestring{\detokenize{#5}}"
+      )
+  }
 }
-
 \DeclareDocumentCommand{\implicantcorner}{O{0}} {
   % bail if outside environment cartonaugh
   \@cartonaugh@func@bailoutsideenvironment@{}
   %
-        \directlua{
-            manual_draw_corner_implicant(
-                "\luaescapestring{\detokenize{#1}}"
-                )
-        }
+  \directlua{
+    manual_draw_corner_implicant(
+      "\luaescapestring{\detokenize{#1}}"
+      )
+  }
 }
-
 \endinput
 %%
 %% End of file `cartonaugh.sty'.
