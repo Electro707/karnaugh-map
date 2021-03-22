@@ -78,6 +78,12 @@ function getColor(index)
     end
 end
 
+function customColor(color)
+    -- Some high number so it's not in the CARTONAUGH_COLORS array
+    cartonaugh_env_settings.color_index = 100
+    CARTONAUGH_DEFAULT_COLOR = color
+end
+
 -- Function to generate a kmap template
 function generateKMap(column, row, grid_numb)
     local outside_column_bits = 1
@@ -147,6 +153,10 @@ function init_cartonaught_env(numb_cols, numb_row, numb_submaps, is_bw, var12_st
                 v56 = var56_str,
         },
         color_index = 1,
+        implicant_settings = {
+            inner_sep = 0.35,
+            outer_sep = 0.55,
+        }
     }
     used_cells = {}
 
@@ -157,6 +167,14 @@ function init_cartonaught_env(numb_cols, numb_row, numb_submaps, is_bw, var12_st
     end
 
     draw_pgf_kmap(numb_cols, numb_row, numb_submaps, var12_str, var34_str, var56_str, is_submap_seperated)
+end
+
+function change_implicant_inner_spread(new_amount)
+    cartonaugh_env_settings.implicant_settings.inner_sep = new_amount
+end
+
+function change_implicant_outer_spread(new_amount)
+    cartonaugh_env_settings.implicant_settings.outer_sep = new_amount
 end
 
 -- Function to generate the k-maps
@@ -239,6 +257,7 @@ end
 function manual_draw_implicant(st, en, submaps_str)
     local color_index = cartonaugh_env_settings.color_index
     local max_submaps = cartonaugh_env_settings.submaps
+    local inner_spread = cartonaugh_env_settings.implicant_settings.inner_sep
     st = tonumber(st)
     en = tonumber(en)
     local submap_arr = split(submaps_str, ',')
@@ -246,11 +265,11 @@ function manual_draw_implicant(st, en, submaps_str)
     for s=1,table.getn(submap_arr),1 do
         current_submap = tonumber(submap_arr[s])
         if current_submap < max_submaps then
+            local draw_str = string.format("($(%s.center)+(-%s,%s)$) rectangle ($(%s.center)+(%s,-%s)$)", decimalToGreyBin(current_submap, 2) .. decimalToBin(st,4), inner_spread, inner_spread, decimalToGreyBin(current_submap, 2) .. decimalToBin(en,4), inner_spread, inner_spread)
             if cartonaugh_env_settings.bw == 0 then
-                localPrint(string.format("\\fill[rounded corners=3pt,fill=%s,fill opacity=0.25,] {($(%s.center)+(-0.3,0.3)$) rectangle ($(%s.center)+(0.3,-0.3)$)};", getColor(color_index) , decimalToGreyBin(current_submap, 2) .. decimalToBin(st,4), decimalToGreyBin(current_submap, 2) .. decimalToBin(en,4)))
---                 color_index = color_index+1
+                localPrint(string.format("\\fill[rounded corners=3pt,fill=%s,fill opacity=0.25,] {%s};", getColor(color_index) , draw_str))
             end
-            localPrint(string.format("\\draw[rounded corners=3pt,draw opacity=1.0,] {($(%s.center)+(-0.3,0.3)$)rectangle($(%s.center)+(0.3,-0.3)$)};", decimalToGreyBin(current_submap, 2) .. decimalToBin(st,4), decimalToGreyBin(current_submap, 2) .. decimalToBin(en,4)))
+            localPrint(string.format("\\draw[rounded corners=3pt,draw opacity=1.0,] {%s};", draw_str))
         else
             localPrint(string.format("\\PackageWarning{cartonaugh}{You can only draw on existing sub maps. Ignoring instruction to draw on non existing sub map number %d}", s))
         end
@@ -288,8 +307,8 @@ function manual_draw_edge_implicant_orientation(corner1, corner2, submaps_str, o
     corner1 = tonumber(corner1)
     corner2 = tonumber(corner2)
     local submap_arr = split(submaps_str, ',')
-    local inner_spread = 0.35
-    local outer_spead = 0.55
+    local inner_spread = cartonaugh_env_settings.implicant_settings.inner_sep
+    local outer_spead = cartonaugh_env_settings.implicant_settings.outer_sep
     --     Check if the implacent selection
     for s=1,table.getn(submap_arr),1 do
         current_submap = tonumber(submap_arr[s])
@@ -328,8 +347,8 @@ function manual_draw_corner_implicant(submaps_str)
     local submap_arr = split(submaps_str, ',')
     local max_submaps = cartonaugh_env_settings.submaps
     local color = cartonaugh_env_settings.color_index
-    local inner_spread = 0.35
-    local outer_spread = 0.55
+    local inner_spread = cartonaugh_env_settings.implicant_settings.inner_sep
+    local outer_spread = cartonaugh_env_settings.implicant_settings.outer_sep
 
     if cartonaugh_env_settings.cols ~= 4 or cartonaugh_env_settings.rows ~= 4 then
         localPrint("\\PackageError{cartonaugh}{Cannot use a corner implicant on anything but a 4x4. Sorry!}")
