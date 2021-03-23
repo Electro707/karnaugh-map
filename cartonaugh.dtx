@@ -682,7 +682,26 @@
 % \MakeShortVerb{\|}
 % \newpage
 % \begin{macro}{\implicantspread}
-%    The |\implicantspread| bla bla bla
+%    The |\implicantspread| changed the implicant spread
+%
+%    \textbf{Usage:}
+%
+%    \begin{tabularx}{\textwidth}{l X}
+%      \small{|\implicantspread|}  & \\
+%      \small{\marg{inner_spread}} & \small{The inner spread's spread, from 0 to 0.5 (as >0.5 will go out of the implicant square)} \\
+%      \small{\marg{outer_spread}} & \small{The outer spread's spread, from 0.5 and up} \\
+%    \end{tabularx}
+%
+%    \textbf{Example:}
+%
+%    Fill the top left and right cell with ''X''.
+%    \begin{verbatim}
+%    \begin{cartonaugh}[4][4][2]
+%      \implicantedge{4}{12}{6}{14}[0]
+%      \implicantspread{0.25}{0.7}
+%      \implicantedge{4}{12}{6}{14}[1]
+%    \end{cartonaugh}
+%    \end{verbatim}
 % 
 % \iffalse
 %    \begin{macrocode}
@@ -711,9 +730,8 @@
 % \end{macro}
 %
 % \MakeShortVerb{\|}
-% \newpage
 % \begin{macro}{\resetimplicantspread}
-%    The |\resetimplicantspread| bla bla bla
+%    The |\resetimplicantspread| Resets the implicant spread
 % 
 % \iffalse
 %    \begin{macrocode}
@@ -743,7 +761,28 @@
 % \MakeShortVerb{\|}
 % \newpage
 % \begin{macro}{\changecolor}
-%    The |\changecolor| bla bla bla
+%    The |\changecolor| changes the color for implicants
+%
+%    \textbf{Usage:}
+%
+%    \begin{tabularx}{\textwidth}{l X}
+%      \small{|\changecolor|}  & \\
+%      \small{\marg{color}} & \small{The new color for implicants, in Tikz format} \\
+%    \end{tabularx}
+%
+%    \textbf{Example:}
+%
+%    Fill the top left and right cell with ''X''.
+%    \begin{verbatim}
+%    \begin{cartonaugh}
+%      \changecolor{pink}
+%      \implicant{0}{1}
+%      \changecolor{green}
+%      \implicant{8}{10}
+%    \end{cartonaugh}
+%    \end{verbatim}
+%
+%
 % 
 % \iffalse
 %    \begin{macrocode}
