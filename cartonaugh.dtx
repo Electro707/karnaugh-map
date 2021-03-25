@@ -133,7 +133,7 @@
 % ^^A ##########################################################################
 %    \end{macrocode}
 % \fi
-%
+% 
 % \section{Usage}
 %
 % \begin{environment}{cartonaugh}
@@ -150,7 +150,7 @@
 %      \small{\oarg{X label}}     & \small{Label for the X-axis. Default: ''$X_1X_0$''} \\
 %      \small{\oarg{Y label}}     & \small{Label for the Y-axis. Default: ''$X_3X_2$''} \\
 %      \small{\oarg{Z label}}     & \small{Label for the submaps. Default: ''$X_5X_4$''} \\
-%      \small{\oarg{Submap Seperation}}     & \small{Whether to seperate submaps or or not. Default: 1} \\
+%      \small{\oarg{Submap Seperation Type}}     & \small{Whether to seperate the submap by space or by a thick line. Default: 0 (so seperation by space)} \\
 %    \end{tabularx}
 %    \DeleteShortVerb{\|}
 %    \textbf{Example:}
@@ -168,6 +168,12 @@
 %    Six variable karnaugh map, black and white, with X label $ba$, Y label $dc$, and Z label $fe$.
 %    \begin{verbatim}
 %\begin{cartonaugh}*[4][4][4][$ba$][$dc$][$fe$]
+%\end{cartonaugh}
+%    \end{verbatim}
+%
+%    Six variable karnaugh map, black and white, with X label $ba$, Y label $dc$, and Z label $fe$, and the submaps are seperated by a thick line in between.
+%    \begin{verbatim}
+%\begin{cartonaugh}*[4][4][4][$ba$][$dc$][$fe$][1]
 %\end{cartonaugh}
 %    \end{verbatim}
 % 
@@ -346,7 +352,6 @@
 % 
 % \end{macro}
 %
-% \newpage
 % \begin{macro}{\maxterms}
 %    The |\maxterms| command fills the specified cells with ''0'' if they aren't already filled. Order of the cell numbers does not matter.
 %
@@ -482,7 +487,6 @@
 % 
 % \end{macro}
 %
-%
 % \newpage
 % \MakeShortVerb{\|}
 % \subsection{Implicants}
@@ -518,12 +522,13 @@
 %      [Single cell implicant, 0:th cell, on all four submaps.]
 %      \begin{verbatim}
 %\begin{cartonaugh}[4][4][4]
+%     [$BA$][$DC$][$FE$][1]
 %  \implicant{0}{0}[0,1,2,3]
 %\end{cartonaugh}
 %      \end{verbatim}
 %      \columnbreak
 %      \resizebox{\columnwidth}{!}{
-%        \begin{cartonaugh}[4][4][4]
+%        \begin{cartonaugh}[4][4][4][$BA$][$DC$][$FE$][1]
 %          \implicant{0}{0}[0,1,2,3]
 %        \end{cartonaugh}
 %      }
@@ -558,7 +563,6 @@
 % 
 % \end{macro}
 %
-% \newpage
 % \MakeShortVerb{\|}
 % \begin{macro}{\implicantedge}
 %    The |\implicantedge| command draws quadratic implicants with the middle of the implicant facing the edge of a submap either horizontally or vertically. The function is able to draw the same implicant on one or multiple submaps. However if the implicant shall be drawn on multiple submaps, \marg{northwest part - northwest cell}, \marg{northwest part - southeast cell}, \marg{southeast part - northwest cell}, \marg{southeast part - southeast cell} must be specified as if the implicant was to be drawn on the 0:th submap. When turned on, colorization is done automatically, following a global sequence of available colors.
@@ -623,7 +627,6 @@
 % 
 % \end{macro}
 % \MakeShortVerb{\|}
-% \newpage
 % \begin{macro}{\implicantcorner}
 %    The |\implicantcorner| command draws an implicant around only the four corner pieces on one or multiple four variable karnaugh submaps. When turned on, colorization is done automatically, following a global sequence of available colors.
 %
@@ -679,22 +682,24 @@
 % 
 % \end{macro}
 %
-% \MakeShortVerb{\|}
 % \newpage
+% \MakeShortVerb{\|}
+% \subsection{Options}
 % \begin{macro}{\implicantspread}
 %    The |\implicantspread| changed the implicant spread
 %
 %    \textbf{Usage:}
-%
+%    
 %    \begin{tabularx}{\textwidth}{l X}
 %      \small{|\implicantspread|}  & \\
-%      \small{\marg{inner_spread}} & \small{The inner spread's spread, from 0 to 0.5 (as >0.5 will go out of the implicant square)} \\
-%      \small{\marg{outer_spread}} & \small{The outer spread's spread, from 0.5 and up} \\
+%      \small{\marg{innerspread}} & \small{The inner spread's spread, from 0 to 0.5 (as >0.5 will go out of the implicant square)} \\
+%      \small{\marg{outerspread}} & \small{The outer spread's spread, from 0.5 and up} \\
 %    \end{tabularx}
-%
+%    
 %    \textbf{Example:}
-%
-%    Fill the top left and right cell with ''X''.
+%    \DeleteShortVerb{\|}
+%    
+%    \begin{multicols}{2}
 %    \begin{verbatim}
 %    \begin{cartonaugh}[4][4][2]
 %      \implicantedge{4}{12}{6}{14}[0]
@@ -702,6 +707,15 @@
 %      \implicantedge{4}{12}{6}{14}[1]
 %    \end{cartonaugh}
 %    \end{verbatim}
+%    \columnbreak
+%    \resizebox{\columnwidth}{!}{
+%    \begin{cartonaugh}[4][4][2]
+%      \implicantedge{4}{12}{6}{14}[0]
+%      \implicantspread{0.25}{0.7}
+%      \implicantedge{4}{12}{6}{14}[1]
+%    \end{cartonaugh}
+%    }
+%    \end{multicols}
 % 
 % \iffalse
 %    \begin{macrocode}
@@ -731,8 +745,8 @@
 %
 % \MakeShortVerb{\|}
 % \begin{macro}{\resetimplicantspread}
-%    The |\resetimplicantspread| Resets the implicant spread
-% 
+%    The |\resetimplicantspread| resets the implicant spread if set by |\implicantspread| to default values
+%   \DeleteShortVerb{\|}
 % \iffalse
 %    \begin{macrocode}
 % ^^A ##########################################################################
@@ -759,7 +773,6 @@
 % 
 % \end{macro}
 % \MakeShortVerb{\|}
-% \newpage
 % \begin{macro}{\changecolor}
 %    The |\changecolor| changes the color for implicants
 %
@@ -769,10 +782,11 @@
 %      \small{|\changecolor|}  & \\
 %      \small{\marg{color}} & \small{The new color for implicants, in Tikz format} \\
 %    \end{tabularx}
-%
+%    \DeleteShortVerb{\|}
 %    \textbf{Example:}
 %
-%    Fill the top left and right cell with ''X''.
+%    \begin{multicols}{2}
+%    [Change the implicant color to pink, then green]
 %    \begin{verbatim}
 %    \begin{cartonaugh}
 %      \changecolor{pink}
@@ -781,7 +795,16 @@
 %      \implicant{8}{10}
 %    \end{cartonaugh}
 %    \end{verbatim}
-%
+%    \columnbreak
+%    \resizebox{\columnwidth}{!}{
+%      \begin{cartonaugh}
+%        \changecolor{pink}
+%        \implicant{0}{1}
+%        \changecolor{green}
+%        \implicant{8}{10}
+%      \end{cartonaugh}
+%    }
+%    \end{multicols}
 %
 % 
 % \iffalse
@@ -814,7 +837,7 @@
 %   \begin{multicols}{2}
 %     [Draw a karnaugh map for \small{$f(a,b,c,d,e,f) =$\\$\Sigma(0,1,2,3,8,13,17,20,22,28,33,32,30,19,40,35,49,42,34,10,60,54,62,51,52)$\\$+d(15,45,47)$}.]
 %     \begin{verbatim}
-%\begin{cartonaugh}[4][4][4][$ba$][$dc$][$fe$]
+%\begin{cartonaugh}[4][4][4][$ba$][$dc$][$fe$][1]
 %  \minterms{0,1,2,3,8,13,17,20,22,28,
 %    33,32,30,19,40,35,49,42,34,10,60,
 %    54,62,51,52}
@@ -828,7 +851,7 @@
 %     \end{verbatim}
 %     \columnbreak
 %     \resizebox{\columnwidth}{!}{
-%       \begin{cartonaugh}[4][4][4][$ba$][$dc$][$fe$]
+%       \begin{cartonaugh}[4][4][4][$ba$][$dc$][$fe$][1]
 %         \minterms{0,1,2,3,8,13,17,20,22,28,33,32,30,19,40,35,49,42,34,10,60,54,62,51,52}
 %         \indeterminants{15,45,47}
 %         \autoterms[0]
@@ -915,7 +938,7 @@
 %</package>
 %<*luacode>
 %
-% This is the Luacode that is generated and put into cart**.lua
+% This is the Luacode that is generated and put into cartonaugh.lua
 % \iffalse
 %\begin{macrocode}
 DEBUG_FLAG = 0
