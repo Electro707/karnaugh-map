@@ -11,7 +11,7 @@
 %<package>%%
 %<package>
 %<package>\NeedsTeXFormat{LaTeX2e}
-%<package>\ProvidesPackage{cartonaugh}[2017/02/20 v1.1 Draw Karnaugh Maps]
+%<package>\ProvidesPackage{cartonaugh}[2021/07/15 v1.0 Draw Karnaugh Maps]
 %
 %<*driver>
   \documentclass{ltxdoc}
@@ -51,7 +51,7 @@
 %   Right brace   \}     Tilde         \~}
 %
 %
-% \changes{dev}{2021/03/12}{Development Version}
+% \changes{v1.0}{2021/07/15}{Initial Release}
 %
 % \GetFileInfo{cartonaugh.sty}
 %
@@ -62,7 +62,7 @@
 %\maketitle
 %
 % \begin{abstract}
-%   This package draws karnaugh maps with 2, 3, 4, 5, and 6 variables.
+%   This package, a fork of Mattias Jacobsson/2pi's \href{https://github.com/2pi/karnaugh-map}{karnaugh-map} package, draws karnaugh maps with 2, 3, 4, 5, and 6 variables.
 %   It also contains commands for filling the karnaugh map with terms semi-automatically or manually.
 %   Last but not least it contains commands for drawing implicants on top of the map.
 %   Cartonaugh is a portmanteau of ``cartographer'' and ``karnaugh''.
@@ -441,7 +441,6 @@
 % \end{macro}
 %
 % \begin{macro}{\terms}
-%    \changes{v1.1}{2017/02/06}{Support user specified term content and variable entered maps}
 %    The |\terms| command fills the specified cells with the specified content if they aren't already filled. Order of the cell numbers does not matter.
 %
 %    \textbf{Usage:}
@@ -934,12 +933,14 @@
 %
 % An example of errorious usage related to the \small{\marg{cells}} parameter in the terms related commands can result in multiple zeros, ones and other terms overlapping in the same cell in the outputted karnaugh map.
 %
-%
+%\iffalse
 %</package>
 %<*luacode>
 %
+%
 % This is the Luacode that is generated and put into cartonaugh.lua
-% \iffalse
+%
+%
 %\begin{macrocode}
 DEBUG_FLAG = 0
 
@@ -1416,7 +1417,7 @@ function write_to_cell(cells, what_to_write)
     end
 end
 %\end{macrocode}
-%\fi
 %</luacode>
+%\fi
 %
 \endinput

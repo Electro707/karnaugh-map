@@ -11,7 +11,7 @@ It also allows for some advanced capability, for example the ability to feed in 
 automatically highlight which cells need to be highlighed (upcomming/todo).
 
 ## Installation
-    # to get the cartonaugh.sty file
+    # to get the cartonaugh.sty and cartonaugh.lua file
     lualatex cartonaugh.ins
     # to get the documentation: cartonaugh.pdf
     lualatex cartonaugh.dtx
@@ -23,12 +23,6 @@ automatically highlight which cells need to be highlighed (upcomming/todo).
 
 ## Development
 This fork is still in development.
-
-## TODOs
-- Fully test out package with some functions switched to Lua
-- Add a color input function
-- Add option to have graphs close together for a 4x4x2 or a 4x4x4 table.
-- Add some kind of boolean parser (for example just feeding in (A+B)*C) (Long term)
 
 ## Tests
     ./test.sh

@@ -5,7 +5,8 @@
 *.out
 *.pdf
 !test/expected/karnaugh-*.pdf
-# *.sty
+*.sty
+*.lua
 *.toc
 test/actual
 test/result
