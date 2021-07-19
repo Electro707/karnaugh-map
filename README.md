@@ -1,5 +1,4 @@
-# NOTE: THIS FORK IS STILL IN DEVELOPEMENT.
-# Cartonaugh
+# Cartonaugh v1.0
 This package is a fork of the [karnaugh-map](https://github.com/2pi/karnaugh-map) package. This fork
 is meant to replace some of the functions in this package with Lua internally, and add some 
 features unto the original package (for example I'm thinking an auto-boolean equation parser).
@@ -20,9 +19,6 @@ automatically highlight which cells need to be highlighed (upcomming/todo).
 * tikz
 * xparse
 * xstring
-
-## Development
-This fork is still in development.
 
 ## Tests
     ./test.sh
